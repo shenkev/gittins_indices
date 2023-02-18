@@ -1,36 +1,39 @@
-γ = 0.9
-T = 50
-αₘ = T-1
-βₘ = T-1  # max β (equal to max α)
-Δp = 0.0001
+function run(γ, T)
 
-R = zeros((αₘ, βₘ))
-G = zeros((αₘ, βₘ))
+    αₘ = T-1
+    βₘ = T-1  # max β (equal to max α)
+    Δp = 0.0001
 
-for α in range(1, αₘ)
-    R[α, T-α] = α/T
-end
+    R = zeros((αₘ, βₘ))
+    G = zeros((αₘ, βₘ))
 
-for p in Δp/2:Δp:1
+    for α in range(1, αₘ)
+        R[α, T-α] = α/T
+    end
 
-    Vₚ = p/(1-γ)
+    @showprogress for p in Δp/2:Δp:1
 
-    for t in βₘ:-1:2
+        Vₚ = p/(1-γ)
 
-        for α in 1:t-1
+        for t in βₘ:-1:2
 
-            Vᵣ = α/t * (1 + γ * R[α+1, t-α]) + (t-α)/t * (γ * R[α, t-α+1])
+            for α in 1:t-1
 
-            if (G[α, t-α] == 0.0) && (Vₚ >= Vᵣ)
-                G[α, t-α] = p - Δp/2
+                Vᵣ = α/t * (1 + γ * R[α+1, t-α]) + (t-α)/t * (γ * R[α, t-α+1])
+
+                if (G[α, t-α] == 0.0) && (Vₚ >= Vᵣ)
+                    G[α, t-α] = p - Δp/2
+                end
+
+                R[α,t-α] = maximum([Vₚ, Vᵣ])
+
             end
-
-            R[α,t-α] = maximum([Vₚ, Vᵣ])
 
         end
 
     end
 
+    display(G[1:10, 1:10])
 end
 
-display(G[1:10, 1:10])
+run(0.9, 100)
